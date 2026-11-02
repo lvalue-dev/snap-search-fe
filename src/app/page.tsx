@@ -15,8 +15,14 @@ import SelectionBreadcrumb from "@/components/common/SelectionBreadcrumb";
 import TeamCard from "@/components/card/TeamCard";
 import { useRouter } from "next/navigation";
 
+/** 유럽 시즌은 7~8월에 시작하므로 7월 이후면 올해, 그 전이면 작년이 현재 시즌 */
+const currentSeason = (() => {
+  const now = new Date();
+  return now.getMonth() >= 6 ? now.getFullYear() : now.getFullYear() - 1;
+})();
+
 export default function Home() {
-  const [selectedSeason, setSelectedSeason] = useState("2024");
+  const [selectedSeason, setSelectedSeason] = useState(String(currentSeason));
   const [selectedCountry, setSelectedCountry] = useState<{
     id: number;
     name: string;
@@ -69,7 +75,7 @@ export default function Home() {
     return <Spinner />;
   // if (error) return <div>에러가 발생했습니다</div>;
 
-  const seasons = Array.from({ length: 13 }, (_, i) => (2024 - i).toString());
+  const seasons = Array.from({ length: 14 }, (_, i) => (currentSeason - i).toString());
 
   return (
     <Suspense fallback={<Spinner />}>
@@ -98,7 +104,7 @@ export default function Home() {
               // setSelectedLeague({ id: leagueId, name: "리그 이름" }); // Replace with actual name
             }}
             onReset={() => {
-              setSelectedSeason("2024");
+              setSelectedSeason(String(currentSeason));
               setSelectedCountry(null);
               setSelectedLeague(null);
             }}

@@ -5,6 +5,7 @@ import styled from "styled-components";
 import { Providers } from "./providers";
 import { useEffect, useRef } from 'react';
 import { teamStore } from '@/stores/teamStore';
+import { LiveUpdatesBridge } from '@/hooks/useLiveUpdates';
 
 const LayoutContainer = styled.div`
   min-height: auto;
@@ -54,6 +55,7 @@ export default function ClientLayout({ children }: { children: React.ReactNode }
 
   return (
     <Providers>
+      <LiveUpdatesBridge />
       <Header platformName="SNAP-SEARCH" />
       <LayoutContainer ref={layoutRef}>{children}</LayoutContainer>
     </Providers>

@@ -56,6 +56,12 @@ export interface Match {
 
   fixtureDate: string;
   fixtureStatusShort: string;
+  fixtureStatusLong?: string;
+  /** 진행 중일 때 경과 분 (예: 67) */
+  fixtureStatusElapsed?: number | null;
+  /** 추가 시간 (예: 45'+2' 의 2) */
+  fixtureStatusExtra?: number | null;
+  leagueId?: number;
   leagueName: string;
   leagueSeason: string;
   leagueRound: string;
@@ -89,4 +95,11 @@ export interface MatchEvent {
   eventType: string;
   detail: string;
   comments: string;
+}
+
+/** SSE "match" 이벤트 페이로드 (백엔드 LiveUpdate) */
+export interface LiveUpdate {
+  match: Match;
+  events: MatchEvent[];
+  updatedAt: string;
 }

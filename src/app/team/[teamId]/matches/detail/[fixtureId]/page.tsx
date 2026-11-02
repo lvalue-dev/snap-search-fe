@@ -42,6 +42,7 @@ const MatchEventDetail = ({ params }: { params: { fixtureId: number } }) => {
   );
 
   const currentMatch = matchList?.find((match) => match.fixtureId === fixtureId);
+  // 진행 중 경기는 SSE(useLiveUpdates)가 ["matchEvents", fixtureId] 캐시를 갱신하므로 별도 폴링 불필요
   const [groupedEvents, setGroupedEvents] = useState<{ [key: string]: MatchEvent[] }>({});
   const [activeTab, setActiveTab] = useState(0); // 현재 선택된 탭 상태
 

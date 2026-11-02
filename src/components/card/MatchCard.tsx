@@ -1,4 +1,5 @@
 import LazyImageComponent from "@/components/common/LazyImageComponent";
+import { isFinishedStatus, isLiveStatus } from "@/api/services/liveService";
 import { Match } from "@/types/api";
 import { convertUtcToKst } from "@/utils/dateUtils";
 import { Box, Card, Typography, useMediaQuery } from "@mui/material";
@@ -13,8 +14,16 @@ interface Props {
 
 export const MatchCard = ({ match, currentTeamId }: Props) => {
   const router = useRouter();
-  const isMatchFinished = match.fixtureStatusShort === "FT";
+  const isMatchFinished = isFinishedStatus(match.fixtureStatusShort) && match.goalsHome != null;
+  const isMatchLive = isLiveStatus(match.fixtureStatusShort);
+  const hasScore = isMatchFinished || isMatchLive;
   const isSmallScreen = useMediaQuery("(max-width:670px)");
+  const liveClock =
+    match.fixtureStatusShort === "HT"
+      ? "HT"
+      : match.fixtureStatusElapsed != null
+        ? `${match.fixtureStatusElapsed}'${match.fixtureStatusExtra ? `+${match.fixtureStatusExtra}` : ""}`
+        : "LIVE";
 
   let winnerTeamId = null;
   if (isMatchFinished) {
@@ -38,8 +47,8 @@ export const MatchCard = ({ match, currentTeamId }: Props) => {
   const handleCloseModal = () => setIsModalOpen(false);
 
   const handleCardClick = () => {
-    if (!isMatchFinished) {
-      setIsModalOpen(true); // ✅ 경기 진행 중이면 모달 띄움
+    if (!hasScore) {
+      setIsModalOpen(true); // 아직 시작하지 않은 경기만 모달 안내
       return;
     }
     router.push(
@@ -63,13 +72,15 @@ export const MatchCard = ({ match, currentTeamId }: Props) => {
               : isDraw
                 ? "#E0E0E0"
                 : "white",
-          borderLeft: isSelectedTeamWinner
-            ? "6px solid #1976D2"
-            : isSelectedTeamLoser
-              ? "6px solid #D32F2F"
-              : isDraw
-                ? "6px solid #757575"
-                : "6px solid transparent",
+          borderLeft: isMatchLive
+            ? "6px solid #2E7D32"
+            : isSelectedTeamWinner
+              ? "6px solid #1976D2"
+              : isSelectedTeamLoser
+                ? "6px solid #D32F2F"
+                : isDraw
+                  ? "6px solid #757575"
+                  : "6px solid transparent",
           "&:hover": {
             backgroundColor: isSelectedTeamWinner
               ? "#BBDEFB"
@@ -101,17 +112,34 @@ export const MatchCard = ({ match, currentTeamId }: Props) => {
             width: "30%",
           }}
         >
+          {isMatchLive && (
+            <Box sx={{ display: "flex", alignItems: "center", gap: "6px", mb: "2px" }}>
+              <Box
+                sx={{
+                  width: 8,
+                  height: 8,
+                  borderRadius: "50%",
+                  backgroundColor: "#2E7D32",
+                  animation: "livePulse 1.2s ease-in-out infinite",
+                  "@keyframes livePulse": { "0%,100%": { opacity: 1 }, "50%": { opacity: 0.3 } },
+                }}
+              />
+              <Typography sx={{ fontSize: "12px", fontWeight: 700, color: "#2E7D32", letterSpacing: "0.5px" }}>
+                {liveClock}
+              </Typography>
+            </Box>
+          )}
           <Typography
             sx={{
-              fontSize: "16px",
+              fontSize: isMatchLive ? "18px" : "16px",
               fontWeight: "bold",
-              color: isMatchFinished ? (isDraw ? "#616161" : "#D32F2F") : "#333",
+              color: isMatchLive ? "#1B5E20" : isMatchFinished ? (isDraw ? "#616161" : "#D32F2F") : "#333",
             }}
           >
-            {isMatchFinished ? `${match.goalsHome} - ${match.goalsAway}` : "VS"}
+            {hasScore ? `${match.goalsHome ?? 0} - ${match.goalsAway ?? 0}` : "VS"}
           </Typography>
 
-          {!isMatchFinished && (
+          {!hasScore && (
             <Box sx={{ textAlign: "center" }}>
               <Typography sx={{ fontSize: "13px", color: "#666" }}>{date}</Typography>
               {!isSmallScreen && (
@@ -144,8 +172,8 @@ export const MatchCard = ({ match, currentTeamId }: Props) => {
               flexDirection: "column",
             }}
           >
-            <Box>아직 진행 중인 경기입니다.</Box>
-            <Box> 경기 종료 후 상세 정보를 확인할 수 있습니다.</Box>
+            <Box>아직 시작하지 않은 경기입니다.</Box>
+            <Box>킥오프 후 실시간 스코어와 이벤트가 표시됩니다.</Box>
           </Box>
         }
       />
